@@ -194,12 +194,11 @@
             try {
                 // 3. Chiama l'API del tuo backend
                 const response = await fetch(GAIA_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    // Invia il prompt nel formato che Gradio si aspetta
-                    body: JSON.stringify({ "data": [userPrompt] }),
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }, // <-- ECCO LA RIGA MANCANTE
+                    body: JSON.stringify({
+                        "data": [prompt]
+                    })
                 });
 
                 if (!response.ok) {
