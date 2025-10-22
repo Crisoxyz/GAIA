@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="it">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GAIA — V0</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg1: #0a0014;
+            --bg2: #120024;
+            --bg3: #1b0033;
+            --accent1: #7f00ff;
+            --accent2: #e100ff;
+            --text-muted: #a6a6b0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: "Inter", sans-serif;
+            color: #fff;
+            background: linear-gradient(180deg, var(--bg1), var(--bg2), var(--bg3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sfere sullo sfondo */
+        .background {
+            position: fixed;
+            inset: -50px;
+            /* MODIFICATO: Leggermente più grande per effetto parallasse */
+            overflow: hidden;
+            z-index: 0;
+            /* NUOVO: transizione per movimento mouse */
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.25;
+            pointer-events: none;
+            animation: float 16s ease-in-out infinite alternate;
+        }
+
+        .orb.one {
+            width: 900px;
+            height: 900px;
+            top: -20%;
+            left: -25%;
+            background: radial-gradient(circle at 30% 30%, rgba(127, 0, 255, 0.35), transparent 60%);
+        }
+
+        .orb.two {
+            width: 700px;
+            height: 700px;
+            bottom: -25%;
+            right: -20%;
+            background: radial-gradient(circle at 70% 70%, rgba(225, 0, 255, 0.25), transparent 60%);
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(40px);
+            }
+        }
+
+        /* Layout principale */
+        .wrap {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            /* NUOVO: transizione per movimento mouse */
+            transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* Bolla versione */
+        .version-bubble {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(27, 0, 51, 0.55);
+            border: 1px solid rgba(177, 0, 255, 0.3);
+            color: #d279ff;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            /* MODIFICATO: animazione d'ingresso */
+            animation: fadeUp 0.8s ease-out forwards 0.2s;
+        }
+
+        /* Titolo */
+        .title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
+            /* NUOVO: animazione d'ingresso */
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out forwards 0.4s;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin: 0;
+            color: #fff;
+            /* ← GAIA bianca */
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+        }
+
+        .dot {
+            color: var(--accent2);
+        }
+
+        /* Parola accanto a GAIA */
+        .word {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--accent2), var(--accent1));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            min-width: 300px;
+            text-align: left;
+            /* NUOVO: per cursore */
+        }
+
+        /* NUOVO: Cursore per parola animata */
+        .word.is-typing::after {
+            content: '_';
+            font-weight: 900;
+            animation: blink 1s infinite;
+            /* Match gradient */
+            background: linear-gradient(90deg, var(--accent2), var(--accent1));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+
+        /* Testo descrizione */
+        .subtitle {
+            margin-top: 2rem;
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin-inline: auto;
+            line-height: 1.6;
+            min-height: 3rem;
+        }
+
+        /* NUOVO: Cursore per sottotitolo */
+        .subtitle::after {
+            content: '_';
+            display: inline-block;
+            margin-left: 5px;
+            font-weight: 400;
+            color: var(--text-muted);
+            animation: blink 1s infinite;
+        }
+
+        /* NUOVO: Nasconde cursore quando animazione è finita */
+        .subtitle.done-typing::after {
+            display: none;
+        }
+
+        /* Pulsante */
+        .btn {
+            margin-top: 2.5rem;
+            padding: 1.1rem 3rem;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            color: #fff;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            /* MODIFICATO: transizione include box-shadow */
+            transition: transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: 0 10px 25px rgba(127, 0, 255, 0.2);
+            /* NUOVO: animazione d'ingresso */
+            opacity: 0;
+            animation: fadeUp 0.8s ease-out forwards 1s;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            opacity: 1;
+            /* MODIFICATO: opacità piena */
+            /* MODIFICATO: Ombra più forte */
+            box-shadow: 0 14px 35px rgba(127, 0, 255, 0.35);
+        }
+
+        .coming {
+            position: absolute;
+            bottom: -460px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #9aa;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards 2s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* NUOVO: Keyframe per animazioni d'ingresso */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Correzione per la bolla che ha già un transform */
+        .version-bubble {
+            animation-name: fadeUpBubble;
+        }
+
+        @keyframes fadeUpBubble {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* NUOVO: Keyframe per cursore */
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background">
+        <div class="orb one"></div>
+        <div class="orb two"></div>
+    </div>
+
+    <div class="wrap">
+        <div class="version-bubble">Nuova versione • V0</div>
+
+        <div class="title-row">
+            <h1>GAIA<span class="dot">.</span></h1>
+            <span class="word" id="word"></span>
+        </div>
+
+        <p class="subtitle" id="subtitle"></p>
+        <a href="playground.html"><button class="btn">Vai al PlayGround</button></a>
+        <div class="coming">Coming Soon</div>
+    </div>
+
+    <script>
+        // Testo descrizione
+        const subtitleText = "L’AI di nuova generazione. Comprende, evolve, connette — GAIA è solo all’inizio.";
+        const subtitle = document.getElementById("subtitle");
+        let i = 0;
+        function typeSubtitle() {
+            subtitle.textContent = subtitleText.slice(0, i);
+            i++;
+            if (i <= subtitleText.length) {
+                setTimeout(typeSubtitle, 35);
+            } else {
+                subtitle.classList.add('done-typing'); // NUOVO: Aggiunge classe al completamento
+            }
+        }
+        // MODIFICATO: Ritarda l'inizio dell'animazione
+        setTimeout(typeSubtitle, 800);
+
+        // Parole accanto a GAIA
+        const words = ["Crea", "Impara", "Comprende", "Evolve", "Connette", "Genera"];
+        const el = document.getElementById("word");
+        let wordIndex = 0;
+        let letterIndex = 0;
+        let deleting = false;
+
+        function animateWord() {
+            const currentWord = words[wordIndex % words.length];
+            if (!deleting) {
+                el.classList.add('is-typing'); // NUOVO: Mostra cursore
+                el.textContent = currentWord.substring(0, letterIndex + 1);
+                letterIndex++;
+                if (letterIndex === currentWord.length) {
+                    deleting = true;
+                    el.classList.remove('is-typing'); // NUOVO: Nasconde cursore in pausa
+                    setTimeout(animateWord, 1200);
+                    return;
+                }
+            } else {
+                el.classList.add('is-typing'); // NUOVO: Mostra cursore
+                el.textContent = currentWord.substring(0, letterIndex - 1);
+                letterIndex--;
+                if (letterIndex === 0) {
+                    deleting = false;
+                    wordIndex++;
+                }
+            }
+            setTimeout(animateWord, deleting ? 40 : 90);
+        }
+
+        // MODIFICATO: Ritarda l'inizio dell'animazione
+        setTimeout(animateWord, 1200);
+
+
+        // NUOVO: Effetto Parallasse Mouse
+        document.body.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            const { innerWidth, innerHeight } = window;
+
+            // Calcola posizione da -1 a 1
+            const x = (clientX / innerWidth - 0.5) * 2; // -1 (sx) a 1 (dx)
+            const y = (clientY / innerHeight - 0.5) * 2; // -1 (su) a 1 (giu)
+
+            // Definisce la "forza" del movimento
+            const bgStrength = 20; // Sfondo si muove di più
+            const wrapStrength = 6; // Contenuto si muove meno e opposto
+
+            const bg = document.querySelector('.background');
+            const wrap = document.querySelector('.wrap');
+
+            // Applica trasformazioni
+            // Lo sfondo si muove *con* il mouse (sembra più lontano)
+            bg.style.transform = `translateX(${x * bgStrength}px) translateY(${y * bgStrength}px)`;
+            // Il contenuto si muove *contro* il mouse (sembra più vicino)
+            wrap.style.transform = `translateX(${-x * wrapStrength}px) translateY(${-y * wrapStrength}px)`;
+        });
+
+    </script>
+</body>
+
+</html>

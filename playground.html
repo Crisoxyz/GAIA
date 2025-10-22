@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAIA Playground</title>
+    <style>
+        :root {
+            --bg1: #0a0014;
+            --bg2: #120024;
+            --bg3: #1b0033;
+            --accent1: #7f00ff;
+            --accent2: #e100ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, var(--bg1), var(--bg2), var(--bg3));
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Glow sfondo */
+        .bg-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle at center, var(--accent1)25%, transparent 70%);
+            filter: blur(180px);
+            opacity: 0.25;
+            z-index: 0;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Titolo */
+        .title {
+            display: flex;
+            align-items: baseline;
+            gap: 18px;
+            z-index: 1;
+            user-select: none;
+        }
+
+        .title h1 {
+            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.03em;
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+        }
+
+        .title span {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Area playground */
+        .playground {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 800px;
+            z-index: 1;
+            margin-top: 50px;
+        }
+
+        .input-box {
+            position: relative;
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 20px 130px 20px 20px;
+            color: #fff;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            backdrop-filter: blur(12px);
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        textarea:focus {
+            border: 1px solid var(--accent2);
+            box-shadow: 0 0 15px rgba(225, 0, 255, 0.2);
+        }
+
+        /* Pulsante integrato */
+        button {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            height: 50px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fff;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            box-shadow: 0 0 15px rgba(150, 0, 255, 0.25);
+            transition: all 0.25s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(180, 50, 255, 0.4);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .response {
+            margin-top: 40px;
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            color: #ccc;
+            font-size: 1rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            padding: 10px 0;
+
+            /* Stile per la barra di scorrimento (opzionale) */
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent1) var(--bg2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="title">
+        <h1>GAIA</h1>
+        <span>Playground</span>
+    </div>
+
+    <div class="playground">
+        <div class="input-box">
+            <textarea id="input" placeholder="Scrivi un prompt per GAIA..."></textarea>
+            <button id="sendButton">Esegui</button>
+        </div>
+        <div class="response" id="response"></div>
+    </div>
+
+    <script>
+        // 1. INCOLLA QUI L'URL DEL TUO HUGGING FACE SPACE
+        //    (Assicurati che l'URL finisca con "/chat")
+        const GAIA_API_URL = "https://NOME-DEL-TUO-SPACE.hf.space/chat";
+
+        // Seleziona gli elementi
+        const sendButton = document.getElementById('sendButton');
+        const input = document.getElementById('input');
+        const responseBox = document.getElementById('response');
+
+        // Funzione per inviare il prompt
+        async function sendPrompt() {
+            const userPrompt = input.value.trim();
+            if (!userPrompt) return;
+
+            responseBox.style.color = '#ccc'; // Colore normale per l'elaborazione
+            responseBox.textContent = 'GAIA sta elaborando...';
+            sendButton.disabled = true; // Disabilita il bottone
+            sendButton.textContent = '...';
+
+            try {
+                // 3. Chiama l'API del tuo backend
+                const response = await fetch(GAIA_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    // Invia il prompt nel formato che Gradio si aspetta
+                    body: JSON.stringify({ "data": [userPrompt] }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Errore HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // 4. Mostra la risposta
+                // Gradio avvolge la risposta in { "data": [ ... ] }
+                // Il nostro app.py restituisce: {"risposta_gaia": "..."}
+                responseBox.textContent = data.data[0].risposta_gaia;
+
+            } catch (error) {
+                console.error("Errore:", error);
+                responseBox.style.color = '#ff6b6b'; // Colore rosso per l'errore
+                responseBox.textContent = `Si è verificato un errore. Impossibile contattare GAIA. (${error.message})`;
+            } finally {
+                // Riabilita il bottone
+                sendButton.disabled = false;
+                sendButton.textContent = 'Esegui';
+            }
+        }
+
+        // Aggiungi gli event listener
+        sendButton.addEventListener('click', sendPrompt);
+
+        // Permetti di inviare con "Invio" (e non "Shift+Invio")
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Impedisce di andare a capo
+                sendPrompt();
+            }
+        });
+    </script>
+</body>
+
+</html>
