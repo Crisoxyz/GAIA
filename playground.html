@@ -178,9 +178,8 @@
         const runButton = document.getElementById("run-button");
         const statusText = document.getElementById("status-text");
 
-        // --- 2. URL DELLA TUA API (RINOMINATO!) ---
-        // Questo è il nuovo nome che non crea conflitti.
-        // Dovrai cambiare anche app.py per farlo corrispondere!
+        // --- 2. URL DELLA TUA API (QUELLO GIUSTO) ---
+        // Puntiamo all'API automatica creata da gr.Interface
         const GAIA_API_URL = "https://criso-xyz-gaia.hf.space/api/predict";
 
         // --- 3. FUNZIONE PER AGGIUNGERE MESSAGGI ALLA CHAT ---
@@ -210,60 +209,52 @@
             runButton.disabled = true;
 
             try {
-                // Questo 'fetch' è configurato per il nuovo URL
                 const response = await fetch(GAIA_API_URL, {
                     method: "POST",
-                    // L'header 'Content-Type' è FONDAMENTALE
+                    // L'header 'Content-Type' (anti-405)
                     headers: { "Content-Type": "application/json" },
-                    // Il 'body' è formattato come { "data": [...] } (come vuole il nostro app.py)
+                    // Il 'body' { "data": [...] } (come vuole gr.Interface)
                     body: JSON.stringify({
                         "data": [prompt]
                     })
                 });
 
                 if (!response.ok) {
-                    // Gestisce errori HTTP (404, 500, ecc.)
                     throw new Error(`Impossibile contattare GAIA. (Errore HTTP: ${response.status})`);
                 }
 
-                // Legge la risposta JSON
                 const result = await response.json();
 
-                // Il nostro app.py restituisce {"data": [{"risposta_gaia": "..."}]}
+                // gr.Interface + outputs=gr.JSON() restituisce {"data": [{"risposta_gaia": "..."}]}
                 const botMessage = result.data[0].risposta_gaia;
 
                 // Aggiunge la risposta di GAIA alla chat
                 addMessage("gaia", botMessage);
-                statusText.textContent = "Pronto."; // Resetta lo stato
+                statusText.textContent = "Pronto.";
 
             } catch (error) {
-                console.error("Errore dettagliato:", error);
-                const errorMessage = error.message || "Errore sconosciuto. Controlla la console del browser (F12).";
-                addMessage("gaia", `Si è verificato un errore. ${errorMessage}`);
-                statusText.textContent = "Errore."; // Mostra stato di errore
+                console.error("Errore dettagliato:", error.message);
+                addMessage("gaia", `Si è verificato un errore. ${error.message}`);
+                statusText.textContent = "Errore.";
             } finally {
-                // Ri-abilita il pulsante in ogni caso
                 runButton.disabled = false;
             }
         }
 
         // --- 5. GESTORI DI EVENTI ---
-
-        // Gestore per il click sul pulsante "Esegui"
         runButton.addEventListener("click", () => {
             const prompt = promptInput.value.trim();
             if (prompt) {
                 addMessage("tu", prompt);
                 callGAIA(prompt);
-                promptInput.value = ""; // Pulisce l'input
+                promptInput.value = "";
             }
         });
 
-        // Gestore per il tasto "Invio" nell'input
         promptInput.addEventListener("keypress", (event) => {
             if (event.key === "Enter") {
-                event.preventDefault(); // Impedisce di andare a capo
-                runButton.click(); // Simula il click sul pulsante
+                event.preventDefault();
+                runButton.click();
             }
         });
     </script>
