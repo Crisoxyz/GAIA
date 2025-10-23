@@ -6,179 +6,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GAIA Playground</title>
     <style>
-        /* --- STILE GENERALE --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
+        :root {
+            --bg1: #0a0014;
+            --bg2: #120024;
+            --bg3: #1b0033;
+            --accent1: #7f00ff;
+            --accent2: #e100ff;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
-        /* --- CONTENITORE PRINCIPALE --- */
-        .playground-container {
+        body {
+            background: linear-gradient(to bottom, var(--bg1), var(--bg2), var(--bg3));
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Glow sfondo */
+        .bg-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle at center, var(--accent1)25%, transparent 70%);
+            filter: blur(180px);
+            opacity: 0.25;
+            z-index: 0;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Titolo */
+        .title {
+            display: flex;
+            align-items: baseline;
+            gap: 18px;
+            z-index: 1;
+            user-select: none;
+        }
+
+        .title h1 {
+            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.03em;
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+        }
+
+        .title span {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Area playground */
+        .playground {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             width: 90%;
             max-width: 800px;
-            height: 90vh;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #e0e0e0;
+            z-index: 1;
+            margin-top: 50px;
         }
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin: 20px 0;
-            font-weight: 600;
+        .input-box {
+            position: relative;
+            width: 100%;
         }
 
-        /* --- FINESTRA DELLA CHAT --- */
-        #chat-container {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: #fdfdfd;
-            border-bottom: 1px solid #eee;
-            border-top: 1px solid #eee;
-        }
-
-        /* --- MESSAGGI (BOLLE) --- */
-        .message {
-            margin-bottom: 15px;
-            max-width: 80%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message .sender {
-            font-weight: 600;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            color: #555;
-        }
-
-        .message p {
-            margin: 0;
-            padding: 12px 18px;
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
-            line-height: 1.5;
-            color: #333;
-        }
-
-        /* Messaggio dell'UtENTE ("Tu") */
-        .message.tu {
-            align-self: flex-end;
-            align-items: flex-end;
-        }
-
-        .message.tu p {
-            background-color: #007bff;
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-
-        .message.tu .sender {
-            text-align: right;
-        }
-
-        /* Messaggio del BOT ("GAIA") */
-        .message.gaia {
-            align-self: flex-start;
-            align-items: flex-start;
-        }
-
-        .message.gaia p {
-            background-color: #e9ecef;
-            color: #212529;
-            border-bottom-left-radius: 5px;
-        }
-
-        /* --- BARRA DI STATO --- */
-        #status-text {
-            padding: 8px 20px;
-            font-size: 0.85em;
-            color: #666;
-            height: 1.2em;
-            text-align: left;
-        }
-
-        /* --- AREA INPUT --- */
-        .input-area {
-            display: flex;
-            padding: 20px;
-            background-color: #fff;
-        }
-
-        #prompt-input {
-            flex-grow: 1;
-            padding: 12px 15px;
-            border: 1px solid #ccc;
-            border-radius: 25px;
-            margin-right: 15px;
-            font-size: 1em;
+            padding: 20px 130px 20px 20px;
+            color: #fff;
+            font-size: 1rem;
             resize: none;
-            height: 24px;
-            line-height: 24px;
+            outline: none;
+            backdrop-filter: blur(12px);
+            transition: border 0.2s ease, box-shadow 0.2s ease;
         }
 
-        #run-button {
-            padding: 12px 25px;
+        textarea:focus {
+            border: 1px solid var(--accent2);
+            box-shadow: 0 0 15px rgba(225, 0, 255, 0.2);
+        }
+
+        /* Pulsante integrato */
+        button {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            height: 50px;
+            padding: 0 24px;
             border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 25px;
+            border-radius: 14px;
             cursor: pointer;
-            font-size: 1em;
             font-weight: 600;
-            transition: background-color 0.2s;
+            font-size: 1rem;
+            color: #fff;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            box-shadow: 0 0 15px rgba(150, 0, 255, 0.25);
+            transition: all 0.25s ease;
         }
 
-        #run-button:hover {
-            background-color: #0056b3;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(180, 50, 255, 0.4);
         }
 
-        #run-button:disabled {
-            background-color: #aaa;
+        button:disabled {
+            background: #555;
             cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .response {
+            margin-top: 40px;
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            color: #ccc;
+            font-size: 1rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            padding: 10px 0;
+
+            /* Stile per la barra di scorrimento (opzionale) */
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent1) var(--bg2);
         }
     </style>
 </head>
 
 <body>
+    <div class="bg-glow"></div>
 
-    <div class="playground-container">
-        <h1>GAIA Playground</h1>
+    <div class="title">
+        <h1>GAIA</h1>
+        <span>Playground</span>
+    </div>
 
-        <div id="chat-container">
-            <div class="message gaia">
-                <span class="sender">GAIA</span>
-                <p>Ciao! Fai una domanda sul mondo Pokémon.</p>
-            </div>
-        </div>
-
-        <div id="status-text">Pronto.</div>
-
-        <div class="input-area">
-            <textarea id="prompt-input" placeholder="Scrivi il tuo prompt..." rows="1"></textarea>
+    <div class="playground">
+        <div class="input-box">
+            <textarea id="input" placeholder="Scrivi un prompt per GAIA..."></textarea>
             <button id="run-button">Esegui</button>
         </div>
+        <div class="response" id="response"></div>
     </div>
 
     <script>
         // --- 1. SELEZIONA GLI ELEMENTI ---
         const chatContainer = document.getElementById("chat-container");
-        const promptInput = document.getElementById("prompt-input"); // Ora trova l'HTML
-        const runButton = document.getElementById("run-button");     // Ora trova l'HTML
+        const promptInput = document.getElementById("prompt-input");
+        const runButton = document.getElementById("run-button");
         const statusText = document.getElementById("status-text");
 
-        // --- 2. URL DELLA TUA API (Punta a /api/predict) ---
+        // --- 2. URL DELLA TUA API (QUELLO GIUSTO) ---
+        // Puntiamo all'API automatica creata da gr.Interface
         const GAIA_API_URL = "https://criso-xyz-gaia.hf.space/api/predict";
 
         // --- 3. FUNZIONE PER AGGIUNGERE MESSAGGI ALLA CHAT ---
@@ -241,7 +242,6 @@
         }
 
         // --- 5. GESTORI DI EVENTI ---
-        // Questi ora funzioneranno perché 'runButton' e 'promptInput' non sono 'null'
         runButton.addEventListener("click", () => {
             const prompt = promptInput.value.trim();
             if (prompt) {
@@ -258,7 +258,6 @@
             }
         });
     </script>
-
 </body>
 
 </html>
