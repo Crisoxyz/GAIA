@@ -406,7 +406,7 @@
 
         // Chiama GAIA
         async function callGAIA(prompt) {
-            const modelName = modelNameInput.value.trim();
+            const modelName = modelNameInput.value.trim().toLowerCase();
 
             if (!modelName) {
                 addMessage("gaia", "⚠️ Configura il nome dello Space (es: Criso-xyz/GAIA-Chat)", true);
