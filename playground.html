@@ -172,65 +172,98 @@
     </div>
 
     <script>
-        // 1. INCOLLA QUI L'URL DEL TUO HUGGING FACE SPACE
-        //    (Assicurati che l'URL finisca con "/chat")
+        // --- 1. SELEZIONA GLI ELEMENTI ---
+        const chatContainer = document.getElementById("chat-container");
+        const promptInput = document.getElementById("prompt-input");
+        const runButton = document.getElementById("run-button");
+        const statusText = document.getElementById("status-text");
+
+        // --- 2. URL DELLA TUA API (RINOMINATO!) ---
+        // Questo è il nuovo nome che non crea conflitti.
+        // Dovrai cambiare anche app.py per farlo corrispondere!
         const GAIA_API_URL = "https://criso-xyz-gaia.hf.space/api/predict";
 
-        // Seleziona gli elementi
-        const sendButton = document.getElementById('sendButton');
-        const input = document.getElementById('input');
-        const responseBox = document.getElementById('response');
+        // --- 3. FUNZIONE PER AGGIUNGERE MESSAGGI ALLA CHAT ---
+        function addMessage(sender, text) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", sender);
 
-        // Funzione per inviare il prompt
-        async function sendPrompt() {
-            const userPrompt = input.value.trim();
-            if (!userPrompt) return;
+            const senderSpan = document.createElement("span");
+            senderSpan.classList.add("sender");
+            senderSpan.textContent = sender.charAt(0).toUpperCase() + sender.slice(1);
 
-            responseBox.style.color = '#ccc'; // Colore normale per l'elaborazione
-            responseBox.textContent = 'GAIA sta elaborando...';
-            sendButton.disabled = true; // Disabilita il bottone
-            sendButton.textContent = '...';
+            const textP = document.createElement("p");
+            textP.textContent = text;
+
+            messageDiv.appendChild(senderSpan);
+            messageDiv.appendChild(textP);
+            chatContainer.appendChild(messageDiv);
+
+            // Scrolla fino in fondo
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // --- 4. FUNZIONE CHE CHIAMA L'API ---
+        async function callGAIA(prompt) {
+            // Mostra lo stato "In elaborazione"
+            statusText.textContent = "GAIA sta elaborando...";
+            runButton.disabled = true;
 
             try {
-                // 3. Chiama l'API del tuo backend
+                // Questo 'fetch' è configurato per il nuovo URL
                 const response = await fetch(GAIA_API_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" }, // <-- ECCO LA RIGA MANCANTE
+                    // L'header 'Content-Type' è FONDAMENTALE
+                    headers: { "Content-Type": "application/json" },
+                    // Il 'body' è formattato come { "data": [...] } (come vuole il nostro app.py)
                     body: JSON.stringify({
                         "data": [prompt]
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Errore HTTP: ${response.status}`);
+                    // Gestisce errori HTTP (404, 500, ecc.)
+                    throw new Error(`Impossibile contattare GAIA. (Errore HTTP: ${response.status})`);
                 }
 
-                const data = await response.json();
+                // Legge la risposta JSON
+                const result = await response.json();
 
-                // 4. Mostra la risposta
-                // Gradio avvolge la risposta in { "data": [ ... ] }
-                // Il nostro app.py restituisce: {"risposta_gaia": "..."}
-                responseBox.textContent = data.data[0].risposta_gaia;
+                // Il nostro app.py restituisce {"data": [{"risposta_gaia": "..."}]}
+                const botMessage = result.data[0].risposta_gaia;
+
+                // Aggiunge la risposta di GAIA alla chat
+                addMessage("gaia", botMessage);
+                statusText.textContent = "Pronto."; // Resetta lo stato
 
             } catch (error) {
-                console.error("Errore:", error);
-                responseBox.style.color = '#ff6b6b'; // Colore rosso per l'errore
-                responseBox.textContent = `Si è verificato un errore. Impossibile contattare GAIA. (${error.message})`;
+                console.error("Errore dettagliato:", error);
+                const errorMessage = error.message || "Errore sconosciuto. Controlla la console del browser (F12).";
+                addMessage("gaia", `Si è verificato un errore. ${errorMessage}`);
+                statusText.textContent = "Errore."; // Mostra stato di errore
             } finally {
-                // Riabilita il bottone
-                sendButton.disabled = false;
-                sendButton.textContent = 'Esegui';
+                // Ri-abilita il pulsante in ogni caso
+                runButton.disabled = false;
             }
         }
 
-        // Aggiungi gli event listener
-        sendButton.addEventListener('click', sendPrompt);
+        // --- 5. GESTORI DI EVENTI ---
 
-        // Permetti di inviare con "Invio" (e non "Shift+Invio")
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Impedisce di andare a capo
-                sendPrompt();
+        // Gestore per il click sul pulsante "Esegui"
+        runButton.addEventListener("click", () => {
+            const prompt = promptInput.value.trim();
+            if (prompt) {
+                addMessage("tu", prompt);
+                callGAIA(prompt);
+                promptInput.value = ""; // Pulisce l'input
+            }
+        });
+
+        // Gestore per il tasto "Invio" nell'input
+        promptInput.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Impedisce di andare a capo
+                runButton.click(); // Simula il click sul pulsante
             }
         });
     </script>
